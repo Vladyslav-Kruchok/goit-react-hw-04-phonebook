@@ -2,8 +2,7 @@ import React from "react";
 import PropTypes from "prop-types"
 import styles from "./Filter.module.css"
 
-export const Filter = (props) => {
-    const { onInput} = props;
+export const Filter = ({ onInput}) => {
     return (
         <label className={styles.label}>
             <span className={styles.span}>Find contacts by name</span>

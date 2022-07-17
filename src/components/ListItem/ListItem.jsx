@@ -2,8 +2,7 @@ import PropsType from "prop-types";
 import React from "react";
 import styles from "./ListItem.module.css";
 
-export const ListItem = (props) => {
-    const {onClick, id, name, number} = props;
+export const ListItem = ({onClick, id, name, number}) => {
     return (
         <>
             <li className={styles.list}>

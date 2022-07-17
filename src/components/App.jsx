@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { nanoid } from 'nanoid';
 
 import { ContactForm } from "../components/ContactForm";
@@ -10,65 +10,56 @@ const INITIAL_STATE = [
     {id: 'id-2', name: 'Hermione Kline', number: '443-89-12'},
     {id: 'id-3', name: 'Eden Clements', number: '645-17-79'},
     {id: 'id-4', name: 'Annie Copeland', number: '227-91-26'},
-  ];
+];
+const useLocalStorage = (key, defaultVal) => { 
+  const [state, setState] = useState(() => {
+    const contactStorage = window.localStorage.getItem(key);
+    return JSON.parse(contactStorage) || defaultVal;
+  });
+      
+  useEffect(() => { 
+    window.localStorage.setItem(key, JSON.stringify(state));
+  }, [key, state]);
+  
+  return [state, setState];
+};
 
-  export class App extends React.Component {
-    state = {
-      contacts: INITIAL_STATE,
-      filter: ''
-    };
-    
-  //#region SYSTEM FUNC #
-  //When app start
-  componentDidMount() {
-    //data in localStorage
-    const contactStorage = localStorage.getItem("contacts");
-    //transform to object
-    const contactStorageParsed = JSON.parse(contactStorage);
-    //check on data in localStorage
-    if (contactStorageParsed) {
-      //write to state
-      this.setState({ contacts: contactStorageParsed });  
-    }
-  };
-  //when data`s updated
-  componentDidUpdate(prevProps, prevState)
-  {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
-    }
-    };
-  //#endregion #
-
+export const App = () => {
+  const [contacts, setContacts] = useLocalStorage("contacts", INITIAL_STATE);
+  const [filter, setFilter] = useState("");
   //#region ON_FUNC #
   //(import) Data from ContactForm
-  extFormOnSubmit = (data) => {
-      this.setState((prevState) => {
-      const result = prevState.contacts.find(item => item.name === data.name);
+  const extFormOnSubmit = (data) => {
+    //console.log(data.name);
+    setContacts((prevState) => {
+        //console.log(prevState);
+        const result = prevState.find(item => item.name === data.name);
+        //console.log(result);
         if (!result) {
-          return { contacts: [...prevState.contacts, this.addId(data)]};
+          return [...prevState, addId(data)];
         } else {
           alert(`${data.name} is already in a contact`);
+          return prevState;
         }
     });
   }
   //del item in ContactList
-    extListOnClick = (e) => {
+  const extListOnClick = (e) => {
     const id = e.nativeEvent.target.id;
-    this.setState((prevState) => {
-      const newArr = prevState.contacts.filter(item => item.id !== id);
-      return {contacts: [...newArr]};
+    setContacts((prevState) => {
+      const newArr = prevState.filter(item => item.id !== id);
+      return [...newArr];
     });
   };
   //update state filter
-  extInputOnInput = (e) => { 
-    this.setState({filter: e.target.value});
+  const extInputOnInput = (e) => { 
+    setFilter(e.target.value);
   };
   //#endregion #
 
   //#region HELPERS #
   //add "id" by transformation from data to JSON and back
-  addId(str) {
+  function addId(str) {
     //make id
     const id = nanoid();
     //part one JSON str
@@ -78,25 +69,26 @@ const INITIAL_STATE = [
     //return new JSON str with Id
     return JSON.parse(`${idStr_PartOne}${str_PartTwoo}`);
     };
-  viewContacts = () => {
-    const lowerCaseFilter = this.state.filter.toLowerCase();
-    const viewContacts = this.state.contacts.filter(
-      item => item.name.toLowerCase().includes(lowerCaseFilter)
-    );
-    return viewContacts;
+  const viewContacts = () => {
+    //console.log(filter);
+    const lowerCaseFilter = filter.toLowerCase();
+    //console.log(lowerCaseFilter);
+    //console.log(contacts);
+    const viewContacts = contacts.filter(
+    item => item.name.toLowerCase().includes(lowerCaseFilter));
+    //console.log(viewContacts);
+    return viewContacts;      
   };
   //#endregion #
     
-    render() {
 
     return(
       <div>
         <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.extFormOnSubmit } />
+        <ContactForm onSubmit={extFormOnSubmit } />
         <h2>Contacts</h2>
-        <Filter onInput={this.extInputOnInput} />
-        <ContactList contacts={this.viewContacts()} onClick={this.extListOnClick} />
+        <Filter onInput={extInputOnInput} />
+        {contacts && <ContactList contacts={viewContacts()} onClick={extListOnClick} />}
       </div>
     );
-  };
 };

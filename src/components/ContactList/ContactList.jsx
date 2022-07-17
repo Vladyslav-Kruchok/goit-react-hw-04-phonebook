@@ -2,8 +2,7 @@ import PropsType from "prop-types";
 import React from "react";
 import { ListItem } from "../ListItem";
 
-export const ContactList = (props) => { 
-        const { contacts, onClick } = props;
+export const ContactList = ({ contacts, onClick }) => { 
         return (
             <ul>
                 {
